@@ -13,17 +13,17 @@ type FareCalculationResponseApi = ApiResponse<FareCalculationResponse>;
 
 export const bookingService = {
   createBooking: async (data: CreateBookingRequest): Promise<BookingResponseApi> => {
-    const response = await apiClient.post<BookingResponse>('/api/Bookings', data);
+    const response = await apiClient.post<BookingResponse>('/Bookings', data);
     return response;
   },
 
   getBooking: async (bookingId: string): Promise<BookingResponseApi> => {
-    const response = await apiClient.get<BookingResponse>(`/api/Bookings/${bookingId}`);
+    const response = await apiClient.get<BookingResponse>(`/Bookings/${bookingId}`);
     return response;
   },
 
   getMyBookings: async (skip: number = 0, take: number = 10): Promise<BookingListResponseApi> => {
-    const response = await apiClient.get<BookingResponse[]>('/api/Bookings/my', {
+    const response = await apiClient.get<BookingResponse[]>('/Bookings/my', {
       params: { skip, take },
     });
     return response;
@@ -33,7 +33,7 @@ export const bookingService = {
     data: FareCalculationRequest
   ): Promise<FareCalculationResponseApi> => {
     const response = await apiClient.post<FareCalculationResponse>(
-      '/api/Bookings/calculate-fare',
+      '/Bookings/calculate-fare',
       data
     );
     return response;
@@ -44,7 +44,7 @@ export const bookingService = {
     paymentId: string
   ): Promise<BookingResponseApi> => {
     const response = await apiClient.post<BookingResponse>(
-      `/api/Bookings/${bookingId}/confirm`,
+      `/Bookings/${bookingId}/confirm`,
       { paymentId }
     );
     return response;
@@ -52,7 +52,7 @@ export const bookingService = {
 
   cancelBooking: async (bookingId: string, reason?: string): Promise<BookingResponseApi> => {
     const response = await apiClient.post<BookingResponse>(
-      `/api/Bookings/${bookingId}/cancel`,
+      `/Bookings/${bookingId}/cancel`,
       { reason }
     );
     return response;

@@ -29,11 +29,14 @@ export interface RouteOption {
 }
 
 export interface RouteSearchParams {
-  fromStationId: string;
-  toStationId: string;
-  departureDate: string;
-  passengerCount: number;
-  preferredMode?: string;
+  Source: string;                    // Source station ID or code
+  Destination: string;                // Destination station ID or code
+  DepartureTime?: string;            // ISO datetime string
+  TransportMode?: string;            // Optional transport mode filter
+  IncludeAccessibility?: boolean;    // Include accessibility info
+  PreferFastest?: boolean;           // Prefer fastest routes
+  MaxTransfers?: number;             // Maximum number of transfers
+  Language?: string;                 // Language for responses
 }
 
 export interface RouteSearchResponse {

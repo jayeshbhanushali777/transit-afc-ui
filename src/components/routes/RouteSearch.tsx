@@ -9,10 +9,13 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 
 const searchSchema = z.object({
-  fromStationId: z.string().min(1, 'Please select source station'),
-  toStationId: z.string().min(1, 'Please select destination station'),
-  departureDate: z.string(),
-  passengerCount: z.number().min(1).max(10),
+  Source: z.string().min(1, 'Please enter source station'),
+  Destination: z.string().min(1, 'Please enter destination station'),
+  DepartureTime: z.string().optional(),
+  TransportMode: z.string().optional(),
+  PreferFastest: z.boolean().optional(),
+  MaxTransfers: z.number().min(0).max(5).optional(),
+  IncludeAccessibility: z.boolean().optional(),
 });
 
 type SearchFormData = z.infer<typeof searchSchema>;
@@ -31,8 +34,9 @@ export const RouteSearch: React.FC<RouteSearchProps> = ({ onSearchComplete }) =>
   } = useForm<SearchFormData>({
     resolver: zodResolver(searchSchema),
     defaultValues: {
-      departureDate: new Date().toISOString().split('T')[0],
-      passengerCount: 1,
+      PreferFastest: true,
+      MaxTransfers: 3,
+      IncludeAccessibility: true,
     },
   });
 
@@ -40,14 +44,21 @@ export const RouteSearch: React.FC<RouteSearchProps> = ({ onSearchComplete }) =>
     setIsSearching(true);
     try {
       const searchParams: RouteSearchParams = {
-        ...data,
-        departureDate: new Date(data.departureDate).toISOString(),
+        Source: data.Source,
+        Destination: data.Destination,
+        DepartureTime: data.DepartureTime || new Date().toISOString(),
+        TransportMode: data.TransportMode,
+        PreferFastest: data.PreferFastest,
+        MaxTransfers: data.MaxTransfers,
+        IncludeAccessibility: data.IncludeAccessibility,
+        Language: 'en',
       };
 
       const response = await routeService.searchRoutes(searchParams);
       
       if (response.isSuccess && response.data) {
         onSearchComplete(response.data);
+        toast.success(`Found ${response.data.routes.length} routes!`);
       } else {
         toast.error(response.message || 'Search failed');
       }
@@ -62,29 +73,64 @@ export const RouteSearch: React.FC<RouteSearchProps> = ({ onSearchComplete }) =>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="From Station ID"
-          {...register('fromStationId')}
-          error={errors.fromStationId?.message}
+          label="Source Station"
+          placeholder="Enter source station ID"
+          {...register('Source')}
+          error={errors.Source?.message}
         />
         <Input
-          label="To Station ID"
-          {...register('toStationId')}
-          error={errors.toStationId?.message}
+          label="Destination Station"
+          placeholder="Enter destination station ID"
+          {...register('Destination')}
+          error={errors.Destination?.message}
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="Departure Date"
-          type="date"
-          {...register('departureDate')}
-          error={errors.departureDate?.message}
+          label="Departure Time (Optional)"
+          type="datetime-local"
+          {...register('DepartureTime')}
+          error={errors.DepartureTime?.message}
         />
         <Input
-          label="Passengers"
+          label="Transport Mode (Optional)"
+          placeholder="e.g., Metro, Bus"
+          {...register('TransportMode')}
+          error={errors.TransportMode?.message}
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            {...register('PreferFastest')}
+            className="w-4 h-4 text-primary-600 rounded"
+          />
+          <span className="text-sm font-medium text-gray-700">Prefer Fastest Route</span>
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            {...register('IncludeAccessibility')}
+            className="w-4 h-4 text-primary-600 rounded"
+          />
+          <span className="text-sm font-medium text-gray-700">Include Accessibility Info</span>
+        </label>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Maximum Transfers
+        </label>
+        <input
           type="number"
-          {...register('passengerCount', { valueAsNumber: true })}
-          error={errors.passengerCount?.message}
+          min="0"
+          max="5"
+          {...register('MaxTransfers', { valueAsNumber: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>
 

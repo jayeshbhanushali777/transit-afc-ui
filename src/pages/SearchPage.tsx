@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { routeService } from '../api/services/routeService';
 import { stationService } from '../api/services/stationService';
-import { RouteOption, RouteSearchResponse } from '../types/route.types';
+import { RouteOption, RouteSearchParams, RouteSearchResponse } from '../types/route.types';
 import { Station } from '../types/station.types';
 import { useBookingStore } from '../store/bookingStore';
 import { Button } from '../components/common/Button';
@@ -22,6 +22,11 @@ export const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const [showDestDropdown, setShowDestDropdown] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [preferFastest, setPreferFastest] = useState(true);
+  const [maxTransfers, setMaxTransfers] = useState(3);
+  const [includeAccessibility, setIncludeAccessibility] = useState(true);
+  const [transportMode, setTransportMode] = useState<string>('');
 
   // Load stations on mount
   React.useEffect(() => {
@@ -52,19 +57,28 @@ export const SearchPage: React.FC = () => {
   
     setIsSearching(true);
     try {
-      const response = await routeService.searchRoutes({
-        fromStationId: sourceStation.id,
-        toStationId: destinationStation.id,
-        departureDate: new Date().toISOString(),
-        passengerCount: 1,
-      });
+      const searchParams: RouteSearchParams = {
+        Source: sourceStation.name,
+        Destination: destinationStation.name,
+        DepartureTime: new Date().toISOString(),
+        IncludeAccessibility: includeAccessibility,
+        PreferFastest: preferFastest,
+        MaxTransfers: maxTransfers,
+        TransportMode: transportMode || undefined,
+        Language: 'en',
+      };
+  
+      const response = await routeService.searchRoutes(searchParams);
   
       if (response.isSuccess && response.data) {
-        const routeData = response.data as RouteSearchResponse;
-        setRoutes(routeData.routes || []);
-        if (routeData.routes.length === 0) {
+        setRoutes(response.data.routes || []);
+        if ((response.data.routes || []).length === 0) {
           toast.info('No routes found for this journey');
+        } else {
+          toast.success(`Found ${response.data.routes.length} route(s)!`);
         }
+      } else {
+        toast.error(response.message || 'Search failed');
       }
     } catch (error: any) {
       toast.error(error.message || 'Search failed');
@@ -285,6 +299,96 @@ export const SearchPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Advanced Search Options */}
+            {sourceStation && destinationStation && (
+              <div className="animate-scale-in">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors mb-3"
+                >
+                  <svg 
+                    className={`w-5 h-5 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  Advanced Search Options
+                </button>
+
+                {showAdvanced && (
+                  <div className="p-4 bg-gray-50 rounded-xl space-y-4 mb-4">
+                    {/* Prefer Fastest */}
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferFastest}
+                        onChange={(e) => setPreferFastest(e.target.checked)}
+                        className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+                      />
+                      <div>
+                        <div className="font-semibold text-gray-900">Prefer Fastest Route</div>
+                        <div className="text-sm text-gray-600">Prioritize travel time over cost</div>
+                      </div>
+                    </label>
+
+                    {/* Include Accessibility */}
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeAccessibility}
+                        onChange={(e) => setIncludeAccessibility(e.target.checked)}
+                        className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+                      />
+                      <div>
+                        <div className="font-semibold text-gray-900">Wheelchair Accessible</div>
+                        <div className="text-sm text-gray-600">Show only accessible routes</div>
+                      </div>
+                    </label>
+
+                    {/* Max Transfers */}
+                    <div>
+                      <label className="block font-semibold text-gray-900 mb-2">
+                        Maximum Transfers: {maxTransfers}
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="5"
+                        value={maxTransfers}
+                        onChange={(e) => setMaxTransfers(parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Direct</span>
+                        <span>Up to 5</span>
+                      </div>
+                    </div>
+
+                    {/* Transport Mode */}
+                    <div>
+                      <label className="block font-semibold text-gray-900 mb-2">
+                        Transport Mode (Optional)
+                      </label>
+                      <select
+                        value={transportMode}
+                        onChange={(e) => setTransportMode(e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Any Mode</option>
+                        <option value="Metro">Metro</option>
+                        <option value="Bus">Bus</option>
+                        <option value="Train">Train</option>
+                        <option value="Tram">Tram</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
