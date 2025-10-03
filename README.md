@@ -1,46 +1,157 @@
-# Getting Started with Create React App
+# Transit AFC - Automatic Fare Collection System (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<div align="center">
 
-## Available Scripts
+![Transit AFC](https://img.shields.io/badge/Transit-AFC-blue?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
 
-In the project directory, you can run:
+**Modern, Responsive Web Application for Public Transit Fare Collection**
 
-### `npm start`
+[Features](#features) • [Installation](#installation) • [Documentation](#documentation) • [Contributing](#contributing)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+</div>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 📋 Table of Contents
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Available Scripts](#available-scripts)
+- [API Integration](#api-integration)
+- [State Management](#state-management)
+- [Styling](#styling)
+- [Components](#components)
+- [Routing](#routing)
+- [Authentication](#authentication)
+- [Payment Flow](#payment-flow)
+- [Development Guidelines](#development-guidelines)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🌟 Overview
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Transit AFC Frontend is a comprehensive web application designed for managing public transportation fare collection. Built with modern React and TypeScript, it provides an intuitive interface for users to search routes, book tickets, make payments, and manage their travel tickets.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Key Highlights
 
-### `npm run eject`
+- 🎨 **Modern UI/UX** - Clean, responsive design with smooth animations
+- 🔐 **Secure Authentication** - JWT-based authentication with protected routes
+- 💳 **Multiple Payment Methods** - UPI, Cards, Net Banking, and Wallets
+- 🎫 **Digital Tickets** - QR code-based tickets with real-time validation
+- 📱 **Mobile Responsive** - Optimized for all device sizes
+- ⚡ **Fast Performance** - Optimized bundle size and lazy loading
+- 🌐 **Multi-language Ready** - Internationalization support structure
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+---
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## ✨ Features
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 🔍 Route Search & Booking
+- **Smart Route Search** - Search routes between any two stations
+- **Multiple Route Options** - View different route alternatives with pricing
+- **Advanced Filters** - Filter by transport mode, transfers, accessibility
+- **Real-time Availability** - Check seat availability and schedules
+- **Route Comparison** - Compare routes by duration, price, and comfort
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### 👤 User Management
+- **User Registration** - Easy sign-up with email verification
+- **Secure Login** - Password-based authentication with remember me
+- **Profile Management** - Update personal information and preferences
+- **Booking History** - View all past and upcoming bookings
+- **Ticket Library** - Access all purchased tickets in one place
 
-## Learn More
+### 💰 Payment Processing
+- **UPI Payments** - PhonePe, Google Pay, Paytm integration
+- **Card Payments** - Credit/Debit card support via secure gateway
+- **Net Banking** - All major banks supported
+- **Wallet Integration** - Digital wallet payments
+- **Payment Simulation** - Demo UPI transaction flow for testing
+- **Payment History** - Track all transactions with receipts
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 🎫 Ticket Management
+- **Digital Tickets** - QR code-based e-tickets
+- **Multiple Passengers** - Book tickets for groups
+- **Ticket Activation** - Activate tickets before travel
+- **Ticket Cancellation** - Cancel with refund processing
+- **Ticket Transfer** - Transfer between routes (where allowed)
+- **Offline Access** - Download tickets for offline use
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 📊 Analytics & Reporting
+- **Booking Analytics** - View spending and travel patterns
+- **Travel Statistics** - Track journey history
+- **Fare Breakdown** - Detailed pricing information
+- **Discount Tracking** - Monitor savings and offers
+
+---
+
+## 🛠 Tech Stack
+
+### Core Technologies
+- **React 18.2.0** - UI library with concurrent features
+- **TypeScript 5.0** - Type-safe development
+- **React Router DOM 6.x** - Client-side routing
+- **Zustand** - Lightweight state management
+
+### UI & Styling
+- **Tailwind CSS 3.4** - Utility-first CSS framework
+- **@tailwindcss/forms** - Beautiful form styling
+- **React Toastify** - Toast notifications
+- **Lucide React** - Modern icon library
+
+### Form Handling & Validation
+- **React Hook Form 7.x** - Performant form management
+- **Zod** - TypeScript-first schema validation
+- **@hookform/resolvers** - Zod integration
+
+### HTTP & API
+- **Axios** - Promise-based HTTP client
+- **React Query** (planned) - Server state management
+
+### Development Tools
+- **ESLint** - Code linting
+- **Prettier** (recommended) - Code formatting
+- **TypeScript ESLint** - TypeScript linting rules
+
+### Additional Libraries
+- **date-fns** - Date manipulation
+- **clsx** - Conditional classNames
+- **QRCode.react** - QR code generation
+
+---
+
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** >= 16.x
+- **npm** >= 8.x or **yarn** >= 1.22.x
+- **Git** for version control
+
+### Recommended Tools
+- **VS Code** with extensions:
+  - ESLint
+  - Prettier
+  - Tailwind CSS IntelliSense
+  - TypeScript and JavaScript Language Features
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-org/transit-afc-frontend.git
+cd transit-afc-frontend
