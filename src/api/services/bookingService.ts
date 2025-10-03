@@ -23,7 +23,7 @@ export const bookingService = {
   },
 
   getMyBookings: async (skip: number = 0, take: number = 10): Promise<BookingListResponseApi> => {
-    const response = await apiClient.get<BookingResponse[]>('/Bookings/my', {
+    const response = await apiClient.get<BookingResponse[]>('/Bookings/my-bookings', {
       params: { skip, take },
     });
     return response;

@@ -23,7 +23,7 @@ export const PaymentStatusDisplay: React.FC<PaymentStatusProps> = ({
 
   const getStatusConfig = () => {
     switch (status) {
-      case Status.Success:
+      case Status.Completed:
         return {
           icon: '✅',
           title: 'Payment Successful!',
@@ -40,7 +40,6 @@ export const PaymentStatusDisplay: React.FC<PaymentStatusProps> = ({
           borderColor: 'border-red-200',
         };
       case Status.Pending:
-      case Status.Processing:
         return {
           icon: '⏳',
           title: 'Payment Processing',
@@ -100,7 +99,7 @@ export const PaymentStatusDisplay: React.FC<PaymentStatusProps> = ({
           )}
 
           <div className="pt-4 space-y-2">
-            {status === Status.Success && (
+            {status === Status.Completed && (
               <>
                 <Button
                   fullWidth
@@ -138,7 +137,7 @@ export const PaymentStatusDisplay: React.FC<PaymentStatusProps> = ({
               </>
             )}
 
-            {(status === Status.Pending || status === Status.Processing) && (
+            {(status === Status.Pending) && (
               <Button
                 fullWidth
                 onClick={() => window.location.reload()}

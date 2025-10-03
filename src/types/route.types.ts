@@ -1,42 +1,53 @@
 import { Station } from './station.types';
 
+export enum RouteType {
+  Direct = 'Direct',
+  Transfer = 'Transfer',
+  Multiple = 'Multiple',
+}
+
 export interface RouteSegment {
-  segmentId: string;
+  routeId: string;
+  routeName: string;
+  routeCode: string;
   startStation: Station;
   endStation: Station;
   departureTime: string;
   arrivalTime: string;
   distance: number;
-  duration: number;
-  transportMode: string;
-  routeNumber: string;
-  routeName: string;
-  routeCode: string;
+  duration: string;                    // Format: "00:25:00"
+  transportMode: string;               // Bus, Metro, Train, etc.
+  fare: number;
+  isWalkingSegment: boolean;
+  color?: string;                      // Route line color
+  vehicleNumber?: string;
+  intermediateStations: Station[];
 }
 
 export interface RouteOption {
   routeId: string;
-  routeName: string;
-  routeCode: string;
+  routeType: RouteType;                // Direct, Transfer, Multiple
   segments: RouteSegment[];
-  totalDistance: number;
-  totalDuration: number;
-  totalFare: number;
   departureTime: string;
   arrivalTime: string;
+  totalDistance: number;
+  totalDuration: string;               // Format: "00:25:00"
+  totalFare: number;
   transferCount: number;
-  isAccessible?: boolean;
+  isAccessible: boolean;
+  comfortScore?: number;               // 1-5 rating
+  polyline?: string | null;            // Map polyline data
 }
 
 export interface RouteSearchParams {
-  Source: string;                    // Source station ID or code
-  Destination: string;                // Destination station ID or code
-  DepartureTime?: string;            // ISO datetime string
-  TransportMode?: string;            // Optional transport mode filter
-  IncludeAccessibility?: boolean;    // Include accessibility info
-  PreferFastest?: boolean;           // Prefer fastest routes
-  MaxTransfers?: number;             // Maximum number of transfers
-  Language?: string;                 // Language for responses
+  Source: string;
+  Destination: string;
+  DepartureTime?: string;
+  TransportMode?: string;
+  IncludeAccessibility?: boolean;
+  PreferFastest?: boolean;
+  MaxTransfers?: number;
+  Language?: string;
 }
 
 export interface RouteSearchResponse {

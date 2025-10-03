@@ -20,7 +20,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({
       popular: true,
     },
     {
-      id: PaymentMethod.Card,
+      id: PaymentMethod.CreditCard,
       name: 'Credit/Debit Card',
       icon: '💳',
       gradient: 'from-purple-500 to-pink-500',

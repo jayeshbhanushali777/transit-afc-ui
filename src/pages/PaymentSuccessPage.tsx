@@ -8,6 +8,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Loading } from '../components/common/Loading';
 import Confetti from 'react-confetti';
+import { toast } from 'react-toastify';
 
 export const PaymentSuccessPage: React.FC = () => {
   const { paymentId } = useParams<{ paymentId: string }>();
@@ -19,37 +20,63 @@ export const PaymentSuccessPage: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(true);
 
   useEffect(() => {
+    console.log('=== PaymentSuccessPage Mounted ===');
+    console.log('Payment ID from params:', paymentId);
+    console.log('Location:', window.location.href);
+    
     if (paymentId) {
       loadPaymentAndTickets();
+    } else {
+      console.error('No payment ID provided!');
+      toast.error('Payment ID missing');
     }
-
-    // Stop confetti after 5 seconds
+  
     const timer = setTimeout(() => setShowConfetti(false), 5000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentId]);
-
+  
   const loadPaymentAndTickets = async () => {
-    if (!paymentId) return;
-
+    if (!paymentId) {
+      console.error('loadPaymentAndTickets called without paymentId');
+      return;
+    }
+  
+    console.log('Loading payment details for ID:', paymentId);
     setIsLoading(true);
+    
     try {
       const paymentResponse = await paymentService.getPayment(paymentId);
+      console.log('Payment API response:', paymentResponse);
+      
       if (paymentResponse.isSuccess && paymentResponse.data) {
+        console.log('✅ Payment loaded successfully:', paymentResponse.data);
         setPayment(paymentResponse.data);
-
-        // Try to load tickets
+  
+        // Try to load ticket
         if (paymentResponse.data.bookingId) {
-          const ticketsResponse = await ticketService.getTicketByBooking(
-            paymentResponse.data.bookingId
-          );
-          if (ticketsResponse.isSuccess && ticketsResponse.data) {
-            setTickets([ticketsResponse.data]);
+          console.log('Loading ticket for booking:', paymentResponse.data.bookingId);
+          try {
+            const ticketsResponse = await ticketService.getTicketByBooking(
+              paymentResponse.data.bookingId
+            );
+            console.log('Ticket API response:', ticketsResponse);
+            
+            if (ticketsResponse.isSuccess && ticketsResponse.data) {
+              console.log('✅ Ticket loaded successfully');
+            }
+          } catch (ticketError) {
+            console.warn('Ticket loading failed (non-critical):', ticketError);
           }
         }
+      } else {
+        console.error('❌ Payment load failed:', paymentResponse.message);
+        toast.error(paymentResponse.message || 'Failed to load payment details');
       }
-    } catch (error) {
-      console.error('Failed to load payment:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to load payment:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      toast.error('Failed to load payment details');
     } finally {
       setIsLoading(false);
     }

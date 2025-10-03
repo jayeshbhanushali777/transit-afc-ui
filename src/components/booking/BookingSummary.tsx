@@ -4,6 +4,7 @@ import { RouteOption } from '../../types/route.types';
 import { Card } from '../common/Card';
 import { Loading } from '../common/Loading';
 import { bookingService } from '../../api/services/bookingService';
+import { formatDuration } from '../../utils/time.utils';
 
 interface BookingSummaryProps {
   route: RouteOption;
@@ -97,7 +98,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
             <div className="flex items-center gap-3 ml-1.5">
               <div className="w-0.5 h-6 bg-gradient-to-b from-green-500 to-red-500"></div>
               <div className="text-sm text-gray-600">
-                {route.totalDistance.toFixed(1)} km • {Math.floor(route.totalDuration / 60)}h {route.totalDuration % 60}m
+              {route.totalDistance.toFixed(1)} km • {formatDuration(route.totalDuration)}
               </div>
             </div>
             <div className="flex items-center gap-3">

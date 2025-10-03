@@ -8,12 +8,14 @@ import {
   PaymentMethod,
   PaymentGateway,
   CreatePaymentRequest,
+  ProcessPaymentRequest,
 } from "../types/payment.types";
 import { PaymentMethods } from "../components/payment/PaymentMethods";
 import { UpiPayment } from "../components/payment/UpiPayment";
 import { Card } from "../components/common/Card";
 import { Loading } from "../components/common/Loading";
 import { Button } from "../components/common/Button";
+import { CardPayment } from "../components/payment/CardPayment";
 
 export const PaymentPage: React.FC = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -53,11 +55,23 @@ export const PaymentPage: React.FC = () => {
     }
   };
 
-  const handlePayment = async (upiId?: string) => {
-    if (!booking || !selectedMethod) return;
-
+  const handlePayment = async (upiId?: string, transactionId?: string) => {
+    if (!booking || selectedMethod == null) {     
+      console.error('Missing booking or payment method');
+      return;
+    }
+  
+    console.log('=== STARTING PAYMENT FLOW ===');
+    console.log('Booking ID:', booking.id);
+    console.log('Selected Method:', selectedMethod);
+    console.log('UPI ID:', upiId);
+    console.log('Transaction ID:', transactionId);
+  
     setIsProcessing(true);
+    
     try {
+      // Step 1: Create Payment
+      console.log('STEP 1: Creating payment...');
       const paymentRequest: CreatePaymentRequest = {
         bookingId: booking.id,
         bookingNumber: booking.bookingNumber,
@@ -67,38 +81,77 @@ export const PaymentPage: React.FC = () => {
         customerEmail: booking.contactEmail,
         customerPhone: booking.contactPhone,
         upiId: upiId,
-        currency: "INR",
+        currency: 'INR',
+        notes: `Payment for booking ${booking.bookingNumber}`,
       };
-
-      const response = await paymentService.createPayment(paymentRequest);
-
-      if (response.isSuccess && response.data) {
-        toast.success("💳 Payment initiated successfully!");
-
-        // Simulate payment processing
-        setTimeout(async () => {
-          try {
-            await paymentService.processPayment({
-              paymentId: response.data!.paymentId,
-              gatewayPaymentId: "demo_" + Date.now(),
-              transactionId: "TXN_" + Date.now(),
-            });
-
-            await bookingService.confirmBooking(booking.id, response.data!.id);
-
-            toast.success("🎉 Payment successful!");
-            navigate(`/payment-success/${response.data!.id}`);
-          } catch (error: any) {
-            toast.error(error.message || "Payment processing failed");
-            setIsProcessing(false);
-          }
-        }, 2000);
-      } else {
-        toast.error(response.message || "Payment creation failed");
+  
+      const createResponse = await paymentService.createPayment(paymentRequest);
+      console.log('Create payment response:', createResponse);
+  
+      if (!createResponse.isSuccess || !createResponse.data) {
+        console.error('Payment creation failed:', createResponse.message);
+        toast.error(createResponse.message || 'Failed to create payment');
         setIsProcessing(false);
+        return;
       }
+  
+      const payment = createResponse.data;
+      console.log('✅ Payment created:', payment);
+  
+      // Step 2: Process Payment (simulate gateway success)
+      console.log('STEP 2: Processing payment...');
+      
+      const processRequest: ProcessPaymentRequest = {
+        paymentId: payment.paymentId || payment.id, // Use paymentId string field
+        gatewayPaymentId: transactionId || `gateway_${Date.now()}`,
+        transactionId: transactionId || `txn_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+        gatewayResponse: {
+          status: 'success',
+          message: 'Payment completed successfully',
+          timestamp: new Date().toISOString(),
+        },
+      };
+  
+      console.log('Processing with request:', processRequest);
+      const processResponse = await paymentService.processPayment(processRequest);
+      console.log('Process payment response:', processResponse);
+  
+      if (!processResponse.isSuccess) {
+        console.error('Payment processing failed:', processResponse.message);
+        toast.error('Failed to process payment');
+        setIsProcessing(false);
+        return;
+      }
+  
+      console.log('✅ Payment processed successfully');
+  
+      // Step 3: Confirm Booking
+      console.log('STEP 3: Confirming booking...');
+      const confirmResponse = await bookingService.confirmBooking(booking.id, payment.id);
+      console.log('Confirm booking response:', confirmResponse);
+  
+      if (!confirmResponse.isSuccess) {
+        console.warn('Booking confirmation failed but payment successful');
+        toast.warning('Payment successful, but booking confirmation pending');
+      } else {
+        console.log('✅ Booking confirmed successfully');
+      }
+  
+      // Step 4: Navigate to Success Page
+      console.log('STEP 4: Navigating to success page...');
+      toast.success('🎉 Payment completed successfully!');
+      
+      setTimeout(() => {
+        console.log('Navigating to:', `/payment-success/${payment.id}`);
+        navigate(`/payment-success/${payment.id}`, { replace: true });
+      }, 500);
+  
+      console.log('=== PAYMENT FLOW COMPLETED ===');
+  
     } catch (error: any) {
-      toast.error(error.message || "Payment failed");
+      console.error('❌ PAYMENT ERROR:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      toast.error(error.message || 'Payment processing failed');
       setIsProcessing(false);
     }
   };
@@ -224,67 +277,21 @@ export const PaymentPage: React.FC = () => {
               <div className="animate-scale-in">
                 <UpiPayment
                   amount={booking.finalAmount}
-                  onProceed={handlePayment}
+                  onProceed={(upiId, transactionId) => handlePayment(upiId, transactionId)}
+                  onCancel={() => setIsProcessing(false)}
                   isLoading={isProcessing}
                 />
               </div>
             )}
 
-            {selectedMethod === PaymentMethod.Card && (
-              <Card className="animate-scale-in">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white shadow-lg">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Card Payment
-                    </h3>
-                    <p className="text-gray-600">Secure payment gateway</p>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  You will be redirected to our secure payment gateway to
-                  complete the transaction
-                </p>
-
-                <Button
-                  fullWidth
-                  size="lg"
-                  onClick={() => handlePayment()}
+            {(selectedMethod === PaymentMethod.CreditCard || selectedMethod === PaymentMethod.DebitCard) && (
+              <div className="animate-scale-in">
+                <CardPayment
+                  amount={booking.finalAmount}
+                  onProceed={() => handlePayment(undefined, `CARD_${Date.now()}`)}
                   isLoading={isProcessing}
-                  icon={
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  }
-                >
-                  Pay ₹{booking.finalAmount.toFixed(2)}
-                </Button>
-              </Card>
+                />
+              </div>
             )}
 
             {selectedMethod === PaymentMethod.NetBanking && (

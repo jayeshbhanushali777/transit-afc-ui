@@ -9,6 +9,7 @@ import { useBookingStore } from '../store/bookingStore';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 import { Loading } from '../components/common/Loading';
+import { RouteCard } from '../components/routes/RouteCard';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ export const SearchPage: React.FC = () => {
       const response = await routeService.searchRoutes(searchParams);
   
       if (response.isSuccess && response.data) {
+        console.log(response.data.routes)
         setRoutes(response.data.routes || []);
         if ((response.data.routes || []).length === 0) {
           toast.info('No routes found for this journey');
@@ -414,178 +416,27 @@ export const SearchPage: React.FC = () => {
         {isSearching && <Loading text="Searching for routes..." />}
 
         {/* Routes List */}
-        {!isSearching && routes.length > 0 && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
+        {routes.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900">
                 Available Routes ({routes.length})
               </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Sorted by fastest route
+              <div className="text-sm text-gray-600">
+                Sorted by best value
               </div>
             </div>
 
-            {routes.map((route, index) => (
-              <Card
-                key={index}
-                hoverable
-                className="relative overflow-hidden group"
-              >
-                {/* Best Value Badge */}
-                {index === 0 && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      Best Value
-                    </span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-6">
-                  {/* Route Info */}
-                  <div>
-                    {/* Route Header */}
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900">
-                          {route.routeName}
-                        </h3>
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded text-xs font-semibold">
-                            {route.routeCode}
-                          </span>
-                          <span className="text-sm">
-                            {route.segments.length} segment{route.segments.length > 1 ? 's' : ''}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Journey Details */}
-                    <div className="space-y-4">
-                      {route.segments.map((segment, idx) => (
-                        <div key={idx} className="flex items-start gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-4 h-4 rounded-full ${idx === 0 ? 'bg-green-500' : idx === route.segments.length - 1 ? 'bg-red-500' : 'bg-blue-500'} shadow-md`}></div>
-                            {idx < route.segments.length - 1 && (
-                              <div className="w-0.5 h-12 bg-gradient-to-b from-blue-300 to-blue-500"></div>
-                            )}
-                          </div>
-                          <div className="flex-1 pb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <h4 className="font-bold text-gray-900 text-lg">
-                                  {segment.startStation.name}
-                                </h4>
-                                <p className="text-sm text-gray-500">
-                                  {segment.startStation.code} • {new Date(segment.departureTime).toLocaleTimeString()}
-                                </p>
-                              </div>
-                              {idx < route.segments.length - 1 && (
-                                <div className="text-right">
-                                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                                    {segment.transportMode}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            {idx === route.segments.length - 1 && (
-                              <div>
-                                <h4 className="font-bold text-gray-900 text-lg">
-                                  {segment.endStation.name}
-                                </h4>
-                                <p className="text-sm text-gray-500">
-                                  {segment.endStation.code} • {new Date(segment.arrivalTime).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Route Stats */}
-                    <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-600">
-                          {Math.floor(route.totalDuration / 60)}h {route.totalDuration % 60}m
-                        </div>
-                        <div className="text-sm text-gray-500">Duration</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-600">
-                          {route.totalDistance.toFixed(1)} km
-                        </div>
-                        <div className="text-sm text-gray-500">Distance</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-600">
-                          {route.segments.length}
-                        </div>
-                        <div className="text-sm text-gray-500">Stops</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Booking Section */}
-                  <div className="lg:w-64 flex flex-col justify-between">
-                    <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-6 mb-4">
-                      <div className="text-center mb-4">
-                        <div className="text-sm text-gray-600 mb-1">Starting from</div>
-                        <div className="text-4xl font-extrabold text-gradient">
-                          ₹{route.totalFare.toFixed(0)}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">per person</div>
-                      </div>
-
-                      <div className="space-y-2 text-xs text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          Instant confirmation
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          Digital QR ticket
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          Free cancellation
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      fullWidth
-                      size="lg"
-                      onClick={() => handleSelectRoute(route)}
-                      icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      }
-                    >
-                      Book Now
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+            <div className="space-y-4">
+              {routes.map((route, index) => (
+                <RouteCard
+                  key={route.routeId}
+                  route={route}
+                  onSelect={handleSelectRoute}
+                  isRecommended={index === 0} // Mark first route as recommended
+                />
+              ))}
+            </div>
           </div>
         )}
 
