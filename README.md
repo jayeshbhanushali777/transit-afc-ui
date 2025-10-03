@@ -155,3 +155,229 @@ Before you begin, ensure you have the following installed:
 ```bash
 git clone https://github.com/your-org/transit-afc-frontend.git
 cd transit-afc-frontend
+
+2. Install Dependencies
+Using npm:
+
+bash
+Copy code
+npm install
+Using yarn:
+
+bash
+Copy code
+yarn install
+3. Environment Setup
+Create a .env file in the root directory:
+
+env
+Copy code
+# API Configuration
+REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_AUTH_API_URL=http://localhost:5001
+REACT_APP_ROUTE_API_URL=http://localhost:5002
+REACT_APP_BOOKING_API_URL=http://localhost:5003
+REACT_APP_PAYMENT_API_URL=http://localhost:5004
+REACT_APP_TICKET_API_URL=http://localhost:5005
+
+# Application Configuration
+REACT_APP_NAME=Transit AFC
+REACT_APP_VERSION=1.0.0
+REACT_APP_ENV=development
+
+# Feature Flags
+REACT_APP_ENABLE_ANALYTICS=false
+REACT_APP_ENABLE_PWA=false
+
+# Payment Gateway (Demo)
+REACT_APP_RAZORPAY_KEY=rzp_test_xxxxxxxxxx
+REACT_APP_STRIPE_KEY=pk_test_xxxxxxxxxx
+4. Start Development Server
+bash
+Copy code
+npm start
+The application will open at http://localhost:3000
+
+⚙️ Configuration
+API Base URLs
+The application connects to multiple microservices:
+
+Service	Default URL	Environment Variable
+Authentication	http://localhost:5001	REACT_APP_AUTH_API_URL
+Routes	http://localhost:5002	REACT_APP_ROUTE_API_URL
+Bookings	http://localhost:5003	REACT_APP_BOOKING_API_URL
+Payments	http://localhost:5004	REACT_APP_PAYMENT_API_URL
+Tickets	http://localhost:5005	REACT_APP_TICKET_API_URL
+Tailwind Configuration
+Custom Tailwind configuration is in tailwind.config.js:
+
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: { /* Custom primary colors */ },
+        secondary: { /* Custom secondary colors */ },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [require('@tailwindcss/forms')],
+}
+
+📁 Project Structure
+
+transit-afc-frontend/
+├── public/
+│   ├── index.html
+│   ├── favicon.ico
+│   └── manifest.json
+├── src/
+│   ├── api/                    # API integration layer
+│   │   ├── client.ts          # Axios instance & interceptors
+│   │   └── services/          # Service modules
+│   │       ├── authService.ts
+│   │       ├── routeService.ts
+│   │       ├── bookingService.ts
+│   │       ├── paymentService.ts
+│   │       └── ticketService.ts
+│   ├── components/            # Reusable components
+│   │   ├── common/           # Generic components
+│   │   │   ├── Button.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   └── Loading.tsx
+│   │   ├── layout/           # Layout components
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── auth/             # Auth components
+│   │   │   ├── LoginForm.tsx
+│   │   │   └── RegisterForm.tsx
+│   │   ├── routes/           # Route components
+│   │   │   ├── RouteSearch.tsx
+│   │   │   ├── RouteCard.tsx
+│   │   │   └── StationSelector.tsx
+│   │   ├── booking/          # Booking components
+│   │   │   ├── BookingSummary.tsx
+│   │   │   ├── PassengerForm.tsx
+│   │   │   └── PromoCode.tsx
+│   │   ├── payment/          # Payment components
+│   │   │   ├── UpiPayment.tsx
+│   │   │   ├── CardPayment.tsx
+│   │   │   ├── NetBankingPayment.tsx
+│   │   │   └── UpiTransactionSimulator.tsx
+│   │   └── ticket/           # Ticket components
+│   │       ├── TicketCard.tsx
+│   │       ├── TicketDetails.tsx
+│   │       └── QRCodeDisplay.tsx
+│   ├── pages/                # Page components
+│   │   ├── HomePage.tsx
+│   │   ├── SearchPage.tsx
+│   │   ├── BookingPage.tsx
+│   │   ├── PaymentPage.tsx
+│   │   ├── PaymentSuccessPage.tsx
+│   │   ├── MyTicketsPage.tsx
+│   │   ├── MyBookingsPage.tsx
+│   │   ├── TicketPage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── LoginPage.tsx
+│   │   └── RegisterPage.tsx
+│   ├── store/                # State management
+│   │   ├── authStore.ts
+│   │   ├── bookingStore.ts
+│   │   └── ticketStore.ts
+│   ├── types/                # TypeScript types
+│   │   ├── api.types.ts
+│   │   ├── auth.types.ts
+│   │   ├── route.types.ts
+│   │   ├── booking.types.ts
+│   │   ├── payment.types.ts
+│   │   └── ticket.types.ts
+│   ├── utils/                # Utility functions
+│   │   ├── time.utils.ts
+│   │   ├── route.utils.ts
+│   │   ├── ticket.utils.ts
+│   │   └── validation.utils.ts
+│   ├── hooks/                # Custom React hooks
+│   │   ├── useAuth.ts
+│   │   ├── useDebounce.ts
+│   │   └── useLocalStorage.ts
+│   ├── routes/               # Route configuration
+│   │   ├── index.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── PublicRoute.tsx
+│   ├── styles/               # Global styles
+│   │   └── index.css
+│   ├── App.tsx              # Root component
+│   └── index.tsx            # Entry point
+├── .env.example             # Environment variables template
+├── .gitignore
+├── package.json
+├── tsconfig.json
+├── tailwind.config.js
+└── README.md
+
+🔌 API Integration
+API Client Configuration
+The application uses Axios with interceptors for centralized error handling:
+
+// src/api/client.ts
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor - Add auth token
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor - Handle errors
+apiClient.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+👥 Team
+Frontend Team - Trailblazers
+Backend Team - Trailblazers
+UI/UX Design - Trailblazers
+📞 Support
+For support, email support@transitafc.com or join our Slack channel.
+
+🙏 Acknowledgments
+React Team for the amazing framework
+Tailwind Labs for Tailwind CSS
+All open-source contributors
+<div align="center">
+Made with ❤️ by Trailblazers
+
+⬆ Back to Top
+
+</div> ```
