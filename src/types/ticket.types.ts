@@ -1,15 +1,15 @@
 import { ApiResponse } from './common.types';
 
 export enum TicketStatus {
-  Active = 0,
-  Used = 1,
-  Expired = 2,
-  Cancelled = 3,
-  Refunded = 4,
-  Suspended = 5,
-  Lost = 6,
-  Transferred = 7,
-  PartiallyUsed = 8,
+  Draft = 0,
+  Generated = 1,
+  Active = 2,
+  Used = 3,
+  Expired = 4,
+  Cancelled = 5,
+  Refunded = 6,
+  Suspended = 7,
+  Invalid = 8
 }
 
 export enum TicketType {
@@ -18,12 +18,72 @@ export enum TicketType {
   DayPass = 2,
   WeeklyPass = 3,
   MonthlyPass = 4,
-  QuarterlyPass = 5,
-  AnnualPass = 6,
-  GroupTicket = 7,
-  StudentPass = 8,
-  SeniorPass = 9,
-  Tourist = 10,
+  Annual = 5,
+  Student = 6,
+  Senior = 7,
+  Disabled = 8,
+  Group = 9,
+  Tourist = 10
+}
+
+export enum TransportMode {
+  Bus = 0,
+  Metro = 1,
+  Train = 2,
+  Tram = 3,
+  Ferry = 4,
+  Other = 5,
+}
+
+export enum FareType {
+  Regular = 0,
+  Concession = 1,
+  Premium = 2,
+  Group = 3,
+  Tourist = 4,
+  Corporate = 5,
+  Student = 6,
+  SeniorCitizen = 7,
+  Disabled = 8,
+}
+
+export interface CreateTicketRequest {
+  bookingId: string; // UUID
+  paymentId: string; // UUID
+  bookingNumber: string;
+  type: TicketType;
+  transportMode: TransportMode;
+  fareType?: FareType;
+  sourceStationId: string; // UUID
+  sourceStationName: string;
+  sourceStationCode: string;
+  destinationStationId: string; // UUID
+  destinationStationName: string;
+  destinationStationCode: string;
+  routeId: string; // UUID
+  routeName?: string;
+  routeCode?: string;
+  basePrice: number;
+  discountAmount?: number;
+  taxAmount?: number;
+  finalPrice: number;
+  currency?: string;
+  validFrom: string; // ISO datetime
+  validUntil: string; // ISO datetime
+  maxUsageCount?: number;
+  passengerName: string;
+  passengerAge?: string;
+  passengerType?: string;
+  passengerPhone?: string;
+  passengerEmail?: string;
+  allowsTransfer?: boolean;
+  maxTransfers?: number;
+  transferTimeLimit?: number;
+  serviceClass?: string;
+  seatNumber?: string;
+  coachNumber?: string;
+  specialInstructions?: string;
+  metadata?: Record<string, any>;
 }
 
 export enum TicketValidationType {
@@ -48,8 +108,8 @@ export enum ValidationResult {
 
 export interface TicketQRCodeResponse {
   id: string;
-  qrCodeId: string;
-  qrCodeImage: string; // Base64 image
+  qrCodeId?: string;
+  qrCodeImage?: string; // Base64 byte array
   status: number;
   generatedAt: string;
   expiresAt: string;
@@ -62,51 +122,60 @@ export interface TicketQRCodeResponse {
 
 export interface TicketValidationResponse {
   id: string;
-  validationId: string;
-  validationType: TicketValidationType;
-  validationResult: ValidationResult;
+  validationId?: string;
+  validationType: number;
+  validationResult: number;
   validationTime: string;
   stationId: string;
-  stationName: string;
-  stationCode: string;
+  stationName?: string;
+  stationCode?: string;
   deviceId: string;
-  deviceName: string;
+  deviceName?: string;
+  deviceType?: string;
+  operatorId?: string;
+  operatorName?: string;
+  validationMethod?: string;
+  validationError?: string;
   isSuccessful: boolean;
   fareDeducted?: number;
-  validationError?: string;
+  vehicleNumber?: string;
+  routeNumber?: string;
 }
 
 export interface TicketResponse {
-  id: string;
-  ticketNumber: string;
+  id: string; // UUID
+  ticketNumber?: string;
   userId: string;
   bookingId: string;
   paymentId: string;
-  bookingNumber: string;
+  bookingNumber?: string;
   status: TicketStatus;
   type: TicketType;
-  transportMode: number;
+  transportMode: TransportMode;
+  fareType: FareType;
   sourceStationId: string;
-  sourceStationName: string;
-  sourceStationCode: string;
+  sourceStationName?: string;
+  sourceStationCode?: string;
   destinationStationId: string;
-  destinationStationName: string;
-  destinationStationCode: string;
+  destinationStationName?: string;
+  destinationStationCode?: string;
   routeId: string;
-  routeName: string;
-  routeCode: string;
+  routeName?: string;
+  routeCode?: string;
   basePrice: number;
   discountAmount?: number;
   taxAmount?: number;
   finalPrice: number;
-  currency: string;
+  currency?: string;
   validFrom: string;
   validUntil: string;
   firstUsedAt?: string;
   lastUsedAt?: string;
   maxUsageCount: number;
   usageCount: number;
-  passengerName: string;
+  estimatedDuration: number;
+  estimatedDistance: number;
+  passengerName?: string;
   passengerAge?: string;
   passengerType?: string;
   passengerPhone?: string;
@@ -116,6 +185,8 @@ export interface TicketResponse {
   allowsTransfer: boolean;
   maxTransfers: number;
   transferCount: number;
+  transferTimeLimit?: number;
+  serviceClass?: string;
   seatNumber?: string;
   coachNumber?: string;
   specialInstructions?: string;
@@ -124,6 +195,7 @@ export interface TicketResponse {
   updatedAt?: string;
   validations?: TicketValidationResponse[];
   qrCodes?: TicketQRCodeResponse[];
+  transfers?: any[];
 }
 
 export interface ValidateTicketRequest {
@@ -142,20 +214,44 @@ export interface ValidateTicketRequest {
   longitude?: number;
 }
 
+export interface TicketValidationRequest {
+  qrCodeData: string;
+  stationId: string;
+  stationName: string;
+  stationCode: string;
+  deviceId: string;
+  deviceName: string;
+  deviceType?: string;
+  operatorId?: string;
+  operatorName?: string;
+  validationType: number;
+  validationMethod?: string;
+  latitude?: number;
+  longitude?: number;
+  direction?: string;
+  platform?: string;
+  gate?: string;
+  tripId?: string;
+  vehicleNumber?: string;
+  routeNumber?: string;
+}
+
 export interface TicketValidationResult {
   isValid: boolean;
-  result: ValidationResult;
-  message: string;
+  result: number;
+  message?: string;
   ticketId?: string;
   ticketNumber?: string;
-  ticketStatus?: TicketStatus;
-  ticketType?: TicketType;
+  ticketStatus: TicketStatus;
+  ticketType: TicketType;
   passengerName?: string;
   validUntil?: string;
   remainingUsage?: number;
   fareDeducted?: number;
+  balanceAfter?: number;
   allowsTransfer: boolean;
   transfersRemaining?: number;
+  additionalInfo?: string;
   validationTime: string;
   validationId: string;
 }

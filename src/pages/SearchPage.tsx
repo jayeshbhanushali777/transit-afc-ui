@@ -90,7 +90,12 @@ export const SearchPage: React.FC = () => {
   };
 
   const handleSelectRoute = (route: RouteOption) => {
+    console.log('Route selected:', route);
+    
+    // Store the selected route in the booking store
     setSelectedRoute(route);
+    
+    toast.success('Route selected! Proceed to booking.');
     navigate('/booking');
   };
 

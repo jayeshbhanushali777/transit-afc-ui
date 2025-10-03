@@ -16,6 +16,9 @@ import { Card } from "../components/common/Card";
 import { Loading } from "../components/common/Loading";
 import { Button } from "../components/common/Button";
 import { CardPayment } from "../components/payment/CardPayment";
+import { ticketService } from '../api/services/ticketService';
+import { generateTicketRequests } from '../utils/ticket.utils';
+import { useBookingStore } from '../store/bookingStore';
 
 export const PaymentPage: React.FC = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -27,6 +30,7 @@ export const PaymentPage: React.FC = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const selectedRoute = useBookingStore((state) => state.selectedRoute);
 
   useEffect(() => {
     if (bookingId) {
@@ -56,17 +60,23 @@ export const PaymentPage: React.FC = () => {
   };
 
   const handlePayment = async (upiId?: string, transactionId?: string) => {
-    if (!booking || selectedMethod == null) {     
+    if (isProcessing) {
+      console.log('⚠️ Payment already in progress, ignoring duplicate call');
+      return;
+    }
+
+    if (!booking || selectedMethod == null) {
       console.error('Missing booking or payment method');
       return;
     }
   
-    console.log('=== STARTING PAYMENT FLOW ===');
-    console.log('Booking ID:', booking.id);
-    console.log('Selected Method:', selectedMethod);
-    console.log('UPI ID:', upiId);
-    console.log('Transaction ID:', transactionId);
+    if (!selectedRoute) {
+      console.error('No route selected');
+      toast.error('Route information missing');
+      return;
+    }
   
+    console.log('=== STARTING PAYMENT FLOW ===');
     setIsProcessing(true);
     
     try {
@@ -90,7 +100,7 @@ export const PaymentPage: React.FC = () => {
   
       if (!createResponse.isSuccess || !createResponse.data) {
         console.error('Payment creation failed:', createResponse.message);
-        toast.error(createResponse.message || 'Failed to create payment');
+        //toast.error(createResponse.message || 'Failed to create payment');
         setIsProcessing(false);
         return;
       }
@@ -98,11 +108,10 @@ export const PaymentPage: React.FC = () => {
       const payment = createResponse.data;
       console.log('✅ Payment created:', payment);
   
-      // Step 2: Process Payment (simulate gateway success)
+      // Step 2: Process Payment
       console.log('STEP 2: Processing payment...');
-      
       const processRequest: ProcessPaymentRequest = {
-        paymentId: payment.paymentId || payment.id, // Use paymentId string field
+        paymentId: payment.paymentId || payment.id,
         gatewayPaymentId: transactionId || `gateway_${Date.now()}`,
         transactionId: transactionId || `txn_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
         gatewayResponse: {
@@ -112,13 +121,12 @@ export const PaymentPage: React.FC = () => {
         },
       };
   
-      console.log('Processing with request:', processRequest);
       const processResponse = await paymentService.processPayment(processRequest);
       console.log('Process payment response:', processResponse);
   
       if (!processResponse.isSuccess) {
         console.error('Payment processing failed:', processResponse.message);
-        toast.error('Failed to process payment');
+        //toast.error('Failed to process payment');
         setIsProcessing(false);
         return;
       }
@@ -132,14 +140,35 @@ export const PaymentPage: React.FC = () => {
   
       if (!confirmResponse.isSuccess) {
         console.warn('Booking confirmation failed but payment successful');
-        toast.warning('Payment successful, but booking confirmation pending');
+        //toast.warning('Payment successful, proceeding to generate tickets...');
       } else {
         console.log('✅ Booking confirmed successfully');
       }
   
-      // Step 4: Navigate to Success Page
-      console.log('STEP 4: Navigating to success page...');
-      toast.success('🎉 Payment completed successfully!');
+      // Step 4: Generate Tickets for All Passengers
+      console.log('STEP 4: Generating tickets...');
+      const ticketRequests = generateTicketRequests(booking, payment.id, selectedRoute);
+      console.log(`Creating ${ticketRequests.length} ticket(s)...`, ticketRequests);
+  
+      const ticketResults = await Promise.allSettled(
+        ticketRequests.map(request => ticketService.createTicket(request))
+      );
+  
+      const successfulTickets = ticketResults.filter(r => r.status === 'fulfilled');
+      const failedTickets = ticketResults.filter(r => r.status === 'rejected');
+  
+      console.log(`✅ Tickets created: ${successfulTickets.length}/${ticketRequests.length}`);
+      
+      if (failedTickets.length > 0) {
+        console.warn('Some tickets failed to create:', failedTickets);
+        //toast.warning(`${successfulTickets.length} ticket(s) created successfully`);
+      } else {
+        console.log('✅ All tickets created successfully');
+      }
+  
+      // Step 5: Navigate to Success Page
+      console.log('STEP 5: Navigating to success page...');
+      toast.success('🎉 Payment completed and tickets generated!');
       
       setTimeout(() => {
         console.log('Navigating to:', `/payment-success/${payment.id}`);
@@ -151,7 +180,7 @@ export const PaymentPage: React.FC = () => {
     } catch (error: any) {
       console.error('❌ PAYMENT ERROR:', error);
       console.error('Error details:', error.response?.data || error.message);
-      toast.error(error.message || 'Payment processing failed');
+      //toast.error(error.message || 'Payment processing failed');
       setIsProcessing(false);
     }
   };

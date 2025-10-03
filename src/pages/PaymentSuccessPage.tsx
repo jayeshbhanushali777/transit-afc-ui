@@ -53,17 +53,24 @@ export const PaymentSuccessPage: React.FC = () => {
         console.log('✅ Payment loaded successfully:', paymentResponse.data);
         setPayment(paymentResponse.data);
   
-        // Try to load ticket
+        // Load all tickets for this booking
         if (paymentResponse.data.bookingId) {
-          console.log('Loading ticket for booking:', paymentResponse.data.bookingId);
+          console.log('Loading tickets for booking:', paymentResponse.data.bookingId);
           try {
-            const ticketsResponse = await ticketService.getTicketByBooking(
-              paymentResponse.data.bookingId
-            );
-            console.log('Ticket API response:', ticketsResponse);
+            // Get all tickets for user
+            const ticketsResponse = await ticketService.getMyTickets(0, 100);
+            console.log('Tickets API response:', ticketsResponse);
             
             if (ticketsResponse.isSuccess && ticketsResponse.data) {
-              console.log('✅ Ticket loaded successfully');
+              // Filter tickets for this booking
+              const bookingTickets = ticketsResponse.data.filter(
+                t => t.bookingId === paymentResponse.data?.bookingId
+              );
+              console.log(`✅ Found ${bookingTickets.length} ticket(s) for this booking`);
+              
+              if (bookingTickets.length > 0) {
+                //toast.success(`${bookingTickets.length} ticket(s) generated successfully!`);
+              }
             }
           } catch (ticketError) {
             console.warn('Ticket loading failed (non-critical):', ticketError);

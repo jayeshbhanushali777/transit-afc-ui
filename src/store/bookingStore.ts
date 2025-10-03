@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { RouteOption } from '../types/route.types';
-import { CreatePassengerRequest } from '../types/booking.types';
+import { BookingResponse, CreatePassengerRequest } from '../types/booking.types';
 
 interface BookingState {
   selectedRoute: RouteOption | null;
+  currentBooking: BookingResponse | null;
   passengers: CreatePassengerRequest[];
   contactEmail: string;
   contactPhone: string;
@@ -11,7 +12,8 @@ interface BookingState {
   discountCode: string;
   
   // Actions
-  setSelectedRoute: (route: RouteOption) => void;
+  setSelectedRoute: (route: RouteOption | null) => void;
+  setCurrentBooking: (booking: BookingResponse | null) => void;
   setPassengers: (passengers: CreatePassengerRequest[]) => void;
   addPassenger: (passenger: CreatePassengerRequest) => void;
   removePassenger: (index: number) => void;
@@ -22,6 +24,7 @@ interface BookingState {
 }
 
 export const useBookingStore = create<BookingState>((set) => ({
+  currentBooking: null,
   selectedRoute: null,
   passengers: [],
   contactEmail: '',
@@ -32,6 +35,8 @@ export const useBookingStore = create<BookingState>((set) => ({
   setSelectedRoute: (route) => set({ selectedRoute: route }),
   
   setPassengers: (passengers) => set({ passengers }),
+
+  setCurrentBooking: (booking) => set({ currentBooking: booking }),
   
   addPassenger: (passenger) =>
     set((state) => ({ passengers: [...state.passengers, passenger] })),

@@ -54,9 +54,9 @@ export const MyTicketsPage: React.FC = () => {
       [TicketStatus.Cancelled]: 'Cancelled',
       [TicketStatus.Refunded]: 'Refunded',
       [TicketStatus.Suspended]: 'Suspended',
-      [TicketStatus.Lost]: 'Lost',
-      [TicketStatus.Transferred]: 'Transferred',
-      [TicketStatus.PartiallyUsed]: 'Partially Used',
+      [TicketStatus.Draft]: 'Draft',
+      [TicketStatus.Generated]: 'Generated',
+      [TicketStatus.Invalid]: 'Invalid',
     };
     return labels[status];
   };
